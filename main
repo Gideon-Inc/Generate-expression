@@ -1,0 +1,62 @@
+public IEnumerable<string> GetFormulas(string[] operands, string[] operators,
+            bool[] operandsUsed, bool[] operatorsUsed,
+            int operCount, List<string> states)
+{
+    if (operCount == 0)
+    {
+        for (int i=0; i<operands.Length; i++)
+        {
+            if (operandsUsed[i]) continue;
+            var oper = operands[i];
+            var sb = new StringBuilder();
+            foreach (var state in states) sb.Append(state);
+            sb.Append(oper);
+            yield return sb.ToString();
+        }
+    }
+    else
+    {       
+        for (int j=0; j<operators.Length; j++)
+        {
+            if (operatorsUsed[j]) continue;
+            var op = operators[j];
+
+            for (int i=0; i<operands.Length; i++)
+            {
+                if (operandsUsed[i]) continue;
+                var oper = operands[i];
+
+                operandsUsed[i] = true;
+                operatorsUsed[j] = true;
+
+                states.Add(oper);
+                states.Add(op);
+                foreach(var f in GetFormulas(operands, operators,operandsUsed, operatorsUsed, operCount-1, states))
+                    yield return f;
+                     operandsUsed[i] = false;
+                operatorsUsed[j] = false;
+
+             operandsUsed[i] = false;
+                operatorsUsed[j] = false;
+
+                states.RemoveAt(states.Count-1);
+                states.RemoveAt(states.Count-1);
+            }
+        }
+    }
+}
+
+
+/*
+Как использовать:
+
+var operands = new[] { "0", "1", "2", "X" };
+var operators = new[] { "+", "-", "*" };
+var L = 1;
+
+foreach (var f in GetFormulas(operands,operators, 
+            new bool[operands.Length], new bool[operators.Length],
+            L, new List<string>()))
+    Console.WriteLine(f);
+    
+    */
